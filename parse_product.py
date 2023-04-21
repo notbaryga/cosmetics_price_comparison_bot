@@ -22,6 +22,10 @@ class Parser:
         price = soup.find('span', attrs={'class': 'price'}).text.replace('\xa0', '').replace('₽', '')
         url = soup.find('a', attrs={'class': 'product-item-link'})['href']
 
+        if self.product.get_product_photo() is None:
+            photo_link = soup.find('img', attrs={'class': 'product-item-photo__img'})['data-src']
+            self.product.add_product_photo(photo_link)
+
         self.product.add_product_data('Золотое яблоко', price, url)
 
     def parse_letual(self):
@@ -31,12 +35,17 @@ class Parser:
             'accept': 'application/json, text/plain, */*'
         }
         response = requests.get(self.letual_url, headers=headers).text
+        print(self.letual_url)
         data = json.loads(response)
 
         try:
             price = data['contents'][0]['mainContent'][2]['records'][0]['attributes']['priceWithoutCoupons']
             product_id = data['contents'][0]['mainContent'][2]['records'][0]['attributes']['product.repositoryId'][0]
             url = Url.get_letual_product_url(product_id)
+
+            if self.product.get_product_photo() is None:
+                photo_link = data['contents'][0]['mainContent'][2]['records'][0]['attributes']['product.largeImage.url.storeSiteRU'][0]
+                self.product.add_product_photo(Url.get_letual_product_photo(photo_link))
 
             self.product.add_product_data('Летуаль', price, url)
         except:
@@ -51,11 +60,17 @@ class Parser:
         end_url = soup.find('a', attrs={'class': 'media'})['href']
         url = Url.get_rivgauche_product_url(end_url)
 
+        if self.product.get_product_photo() is None:
+            product_item = soup.findAll('product-item')
+            photo_link = product_item[3].findAll('img')
+            print(photo_link)
+            self.product.add_product_photo(photo_link)
+
         self.product.add_product_data('Рив Гош', price, url)
 
 
-# parse = Parser("DIOR ADDICT LIPSTICK ")
-# parse.parse_ga()
-# parse.parse_letual()
-# parse.parse_rivgauche()
+parse = Parser("DIOR ADDICT LIPSTICK ")
+#parse.parse_ga()
+#parse.parse_letual()
+parse.parse_rivgauche()
 # print(parse.product.get_product())

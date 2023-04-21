@@ -3,13 +3,14 @@ from aiogram.filters import Text, Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from parse_product import Parser
+from utils import make_product_message
 
 #from keyboards import keyboard_categories, keyboard_menu
 
-load_dotenv()
-API_TOKEN: str = os.getenv('API_TOKEN')
+#load_dotenv()
+API_TOKEN: str = '5952388291:AAEWhe9yVx1eoBCtE5o_ko5aC6b_LP6WE8c' #os.getenv('API_TOKEN')
 
 bot: Bot = Bot(token=API_TOKEN)
 dp: Dispatcher = Dispatcher()
@@ -26,22 +27,17 @@ async def help_command(message: Message):
 
 @dp.message()
 async def search(message: Message):
-    parse = Parser(message.text)
+    query = message.text
+    parse = Parser(query)
+
     parse.parse_ga()
     parse.parse_letual()
     parse.parse_rivgauche()
-    ans = ''
+    ans = make_product_message(query, parse.product.get_product())
 
-   # print(parse.product.get_product())
-    for el in parse.product.get_product():
-        try:
-            for er in el:
-                ans += er + '\n' + str(el[er]) + '\n'
-        except:
-            ans += str(el) + '\n'
-        ans += '\n'
+    photo = parse.product.get_product_photo()
 
-    await message.answer(ans)
+    await message.answer_photo(photo, caption=ans, parse_mode='Markdown')
 
 
 if __name__ == '__main__':

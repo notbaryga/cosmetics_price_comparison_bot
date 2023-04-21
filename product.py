@@ -6,6 +6,7 @@ class Product:
         self.name = name
         self.description = ''
         self.product_in_shops = {}
+        self.photo_link = None
 
     def add_description(self, desc: str):
         self.description = desc
@@ -13,5 +14,11 @@ class Product:
     def add_product_data(self, shop: str, price: str, url: str):
         self.product_in_shops[shop] = {'Цена': price, 'Ссылка': url}
 
-    def get_product(self) -> list:
-        return [self.name, self.product_in_shops]
+    def add_product_photo(self, photo_link: str):
+        self.photo_link = photo_link
+
+    def get_product_photo(self) -> str|None:
+        return self.photo_link
+
+    def get_product(self) -> dict:
+        return self.product_in_shops

@@ -45,3 +45,8 @@ class Url:
     def get_rivgauche_product_url(end_url: str):
         url = Url._RIVGAUCHE_PREFIX + end_url
         return url
+
+    @staticmethod
+    def get_letual_product_photo(photo_url: str):
+        url = Url._LETUAL_PREFIX + photo_url
+        return url
