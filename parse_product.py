@@ -19,15 +19,17 @@ class Parser:
     def parse_ga(self):
         response = requests.get(self.ga_url, )
         soup = bs(response.text, 'html.parser')
+        try:
+            price = soup.find('span', attrs={'class': 'price'}).text.replace('\xa0', '').replace('₽', '')
+            url = soup.find('a', attrs={'class': 'product-item-link'})['href']
 
-        price = soup.find('span', attrs={'class': 'price'}).text.replace('\xa0', '').replace('₽', '')
-        url = soup.find('a', attrs={'class': 'product-item-link'})['href']
+            if self.product.get_product_photo() is None:
+                photo_link = soup.find('img', attrs={'class': 'product-item-photo__img'})['data-src']
+                self.product.add_product_photo(photo_link)
 
-        if self.product.get_product_photo() is None:
-            photo_link = soup.find('img', attrs={'class': 'product-item-photo__img'})['data-src']
-            self.product.add_product_photo(photo_link)
-
-        self.product.add_product_data('Золотое яблоко', price, url)
+            self.product.add_product_data('Золотое яблоко', price, url)
+        except:
+            ...
 
     def parse_letual(self):
         headers = {
@@ -36,7 +38,6 @@ class Parser:
             'accept': 'application/json, text/plain, */*'
         }
         response = requests.get(self.letual_url, headers=headers).text
-        print(self.letual_url)
         data = json.loads(response)
 
         try:

@@ -1,8 +1,7 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Text, Command
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
-from random import randint
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
+
 import os
 #from dotenv import load_dotenv
 from parse_product import Parser
@@ -44,7 +43,7 @@ async def help_command(message: Message):
 
 @dp.message()
 async def search(message: Message):
-    query = message.text
+    query = message.text.replace('"',' ')
     parse = Parser(query)
 
     parse.parse_letual()
@@ -54,20 +53,23 @@ async def search(message: Message):
 
     ans = make_product_message(query, parse.product.get_product(), parse.product.get_product_rating())
 
-    photo = parse.product.get_product_photo()
+    if parse.product.get_product_photo() is not None:
+        photo = parse.product.get_product_photo()
+    else:
+        photo = FSInputFile('sadcat.jpg')
 
     if parse.product.get_product_reviews_link() is not None:
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton(
-            text="Смотреть отзывы",
-            url=parse.product.get_product_reviews_link()))
-
-        # builder = InlineKeyboardBuilder()
-        # builder.add(InlineKeyboardButton(
+        # markup = InlineKeyboardMarkup()
+        # markup.add(InlineKeyboardButton(
         #     text="Смотреть отзывы",
         #     url=parse.product.get_product_reviews_link()))
+
+        markup = InlineKeyboardMarkup()
+        markup.inline_keyboard.append([InlineKeyboardButton(
+            text="Смотреть отзывы",
+            url=parse.product.get_product_reviews_link())])
+
     else:
-        #builder = None
         markup = None
 
     await message.answer_photo(photo, caption=ans, parse_mode='Markdown', reply_markup=markup)
