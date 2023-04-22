@@ -59,16 +59,10 @@ async def search(message: Message):
         photo = FSInputFile('sadcat.jpg')
 
     if parse.product.get_product_reviews_link() is not None:
-        # markup = InlineKeyboardMarkup()
-        # markup.add(InlineKeyboardButton(
-        #     text="Смотреть отзывы",
-        #     url=parse.product.get_product_reviews_link()))
-
         markup = InlineKeyboardMarkup()
         markup.inline_keyboard.append([InlineKeyboardButton(
             text="Смотреть отзывы",
             url=parse.product.get_product_reviews_link())])
-
     else:
         markup = None
 
