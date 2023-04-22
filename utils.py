@@ -3,7 +3,7 @@ def make_product_message(query: str, shops: dict, rating: str) -> str:
 
     ans += f'Рейтинг: {rating}\n\n'
 
-    ans += 'Товар в магазинах:\n\n'
+    ans += 'Товар в магазинах:\n'
     for shop in shops:
         ans += '*' + shop + '*' + '\n'
         for option in shops[shop]:

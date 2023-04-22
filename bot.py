@@ -1,53 +1,38 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Text, Command
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
+from aiogram.types import Message, InlineKeyboardButton, FSInputFile
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 import os
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
+
 from parse_product import Parser
 from utils import make_product_message
 
-#from keyboards import keyboard_categories, keyboard_menu
 
-#load_dotenv()
-API_TOKEN: str = '5952388291:AAEWhe9yVx1eoBCtE5o_ko5aC6b_LP6WE8c' #os.getenv('API_TOKEN')
+load_dotenv()
+API_TOKEN: str = os.getenv('API_TOKEN')
 
 bot: Bot = Bot(token=API_TOKEN)
 dp: Dispatcher = Dispatcher()
 
-# хэндлер на "/start"
+#хэндлер на '/start' и '/help'
 @dp.message(Command(commands=['start']))
-async def start_command(message: Message):
-    await message.answer('Привет!')
-
-# хэнд на  "/help"
 @dp.message(Command(commands=['help']))
-async def help_command(message: Message):
-    await message.answer('текст для help')
+async def start_command(message: Message):
+    await message.answer('Привет!\nЯ - бот, созданный для поиска косметики/парфюма, сравнения цены продукта на разных площадках и быстрого доступа к отзывам\n\nЧтобы начать, отправь мне название продукта!\n\n! Пожалуйста, указывайте конкретный продукт в запросе! Чем точнее Ваш запрос, тем больше вероятность найти продукт\n\nПримеры хороших запросов:\nDIOR ADDICT LIPSTICK\nLoreal alliance perfect nude\nVivienne Sabo Gloire Damour\nLoreal alliance perfect nude\n\nПримеры плохих запросов:\nпарфюм\nDIOR LIPSTICK\nVIVIENNE SABO\nFIT ME\n\nЛюбые вопросы/предложения к @ywuqiwo')
 
-# @dp.message(Command("random"))
-# async def cmd_random(message: Message):
-#     builder = InlineKeyboardBuilder()
-#     builder.add(InlineKeyboardButton(
-#         text="Нажми меня",
-#         callback_data="random_value")
-#     )
-#     await message.answer(
-#         "Нажмите на кнопку, чтобы бот отправил число от 1 до 10",
-#         reply_markup=builder.as_markup()
-#     )
-#
-# @dp.callback_query(Text("random_value"))
-# async def send_random_value(callback: CallbackQuery):
-#     await callback.message.answer(str(randint(1, 10)))
-
-@dp.message()
+@dp.message(F.text)
 async def search(message: Message):
-    query = message.text.replace('"',' ')
+    query = message.text.replace('"', ' ').replace("'", ' ')
+
     parse = Parser(query)
 
-    parse.parse_letual()
     parse.parse_ga()
+    try:
+        parse.parse_letual()
+    except:
+        ...
     parse.parse_rivgauche()
     parse.parse_irecommend()
 
@@ -59,14 +44,20 @@ async def search(message: Message):
         photo = FSInputFile('sadcat.jpg')
 
     if parse.product.get_product_reviews_link() is not None:
-        markup = InlineKeyboardMarkup()
-        markup.inline_keyboard.append([InlineKeyboardButton(
+        builder = InlineKeyboardBuilder()
+        button = InlineKeyboardButton(
             text="Смотреть отзывы",
-            url=parse.product.get_product_reviews_link())])
+            url=parse.product.get_product_reviews_link())
+        builder.add(button)
+        markup = builder.as_markup()
     else:
         markup = None
 
     await message.answer_photo(photo, caption=ans, parse_mode='Markdown', reply_markup=markup)
+
+@dp.message()
+async def answer(message: Message):
+    await message.answer('Извини, я тебя не понимаю :с\nПожалуйста, напиши текстовый запрос')
 
 if __name__ == '__main__':
     dp.run_polling(bot)
