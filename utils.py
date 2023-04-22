@@ -1,5 +1,9 @@
-def make_product_message(query: str, shops: dict) -> str:
+def make_product_message(query: str, shops: dict, rating: str) -> str:
     ans = query + '\n\n'
+
+    ans += f'Рейтинг: {rating}\n\n'
+
+    ans += 'Товар в магазинах:\n\n'
     for shop in shops:
         ans += '*' + shop + '*' + '\n'
         for option in shops[shop]:

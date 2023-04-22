@@ -1,7 +1,8 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Text, Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
+from random import randint
 import os
 #from dotenv import load_dotenv
 from parse_product import Parser
@@ -25,20 +26,51 @@ async def start_command(message: Message):
 async def help_command(message: Message):
     await message.answer('текст для help')
 
+# @dp.message(Command("random"))
+# async def cmd_random(message: Message):
+#     builder = InlineKeyboardBuilder()
+#     builder.add(InlineKeyboardButton(
+#         text="Нажми меня",
+#         callback_data="random_value")
+#     )
+#     await message.answer(
+#         "Нажмите на кнопку, чтобы бот отправил число от 1 до 10",
+#         reply_markup=builder.as_markup()
+#     )
+#
+# @dp.callback_query(Text("random_value"))
+# async def send_random_value(callback: CallbackQuery):
+#     await callback.message.answer(str(randint(1, 10)))
+
 @dp.message()
 async def search(message: Message):
     query = message.text
     parse = Parser(query)
 
-    parse.parse_ga()
     parse.parse_letual()
+    parse.parse_ga()
     parse.parse_rivgauche()
-    ans = make_product_message(query, parse.product.get_product())
+    parse.parse_irecommend()
+
+    ans = make_product_message(query, parse.product.get_product(), parse.product.get_product_rating())
 
     photo = parse.product.get_product_photo()
 
-    await message.answer_photo(photo, caption=ans, parse_mode='Markdown')
+    if parse.product.get_product_reviews_link() is not None:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(
+            text="Смотреть отзывы",
+            url=parse.product.get_product_reviews_link()))
 
+        # builder = InlineKeyboardBuilder()
+        # builder.add(InlineKeyboardButton(
+        #     text="Смотреть отзывы",
+        #     url=parse.product.get_product_reviews_link()))
+    else:
+        #builder = None
+        markup = None
+
+    await message.answer_photo(photo, caption=ans, parse_mode='Markdown', reply_markup=markup)
 
 if __name__ == '__main__':
     dp.run_polling(bot)

@@ -14,6 +14,7 @@ class Parser:
         self.ga_url = Url.get_ga_search_url(self.query)
         self.letual_url = Url.get_letual_search_url(self.query)
         self.rivgauche_url = Url.get_rivgauche_search_url(self.query)
+        self.irecommend_url = Url.get_irecommend_search_url(self.query)
 
     def parse_ga(self):
         response = requests.get(self.ga_url, )
@@ -55,22 +56,33 @@ class Parser:
         response = requests.get(self.rivgauche_url)
         soup = bs(response.text, 'html.parser')
 
-        price = soup.find('div', attrs={'class': 'from-price'}).text.replace('от ', '').replace(' ₽', '').replace(
-            '\xa0', '')
-        end_url = soup.find('a', attrs={'class': 'media'})['href']
-        url = Url.get_rivgauche_product_url(end_url)
+        try:
+            price = soup.find('div', attrs={'class': 'from-price'}).text.replace('от ', '').replace(' ₽', '').replace(
+                '\xa0', '')
+            end_url = soup.find('a', attrs={'class': 'media'})['href']
+            url = Url.get_rivgauche_product_url(end_url)
 
-        if self.product.get_product_photo() is None:
-            product_item = soup.findAll('product-item')
-            photo_link = product_item[3].findAll('img')
-            print(photo_link)
-            self.product.add_product_photo(photo_link)
+            self.product.add_product_data('Рив Гош', price, url)
+        except:
+            ...
 
-        self.product.add_product_data('Рив Гош', price, url)
+    def parse_irecommend(self):
+        response = requests.get(self.irecommend_url)
+        soup = bs(response.text, 'html.parser')
+
+        try:
+            link = Url.get_irecommend_product_url(soup.find(class_ = 'ProductTizer').find('a')['href'])
+            rating = soup.find('span', attrs={'class': 'average-rating'}).find('span').text
+
+            self.product.add_rating(rating)
+            self.product.add_reviews_link(link)
+        except:
+            ...
 
 
-parse = Parser("DIOR ADDICT LIPSTICK ")
+# parse = Parser("DIOR ADDICT LIPSTICK ")
+# parse.parse_irecommend()
 #parse.parse_ga()
 #parse.parse_letual()
-parse.parse_rivgauche()
-# print(parse.product.get_product())
+#parse.parse_rivgauche()
+# print(parse.product.get_product_reviews_link())
